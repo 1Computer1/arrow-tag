@@ -1,15 +1,14 @@
 const { peek, location, many1, oneOf, token, binaryOp } = require('./parser');
 
 /*
-    Arrow  = On
-    On     = Comp ("^^^" Comp)*
-    Comp   = Basic ((">>>" | "<<<") Basic)*
-    Basic  = Sub (("***" | "&&&") Sub)*
-    Sub    = Over ("<*>" Over)*
-    Over   = Unary ("@" [0-9]+)*
-    Unary  = ("$" | "#" | "~")? Atom
-    Atom   = Interp | "(" Arrow ")"
-    Interp = ...
+    Arrow   = Comp
+    Compose = Basic ((">>>" | "<<<") Basic)*
+    Basic   = Combine (("***" | "&&&") Combine)*
+    Combine = Over (("<*>" | "<^>") Over)*
+    Over    = Unary ("@" [0-9]+)*
+    Unary   = ("$" | "#" | "~")? Atom
+    Atom    = Interp | "(" Arrow ")"
+    Interp  = ...
 */
 
 function parse(tokens) {
@@ -24,23 +23,19 @@ function parse(tokens) {
 }
 
 function parseArrow(state) {
-    return parseOn(state);
+    return parseCompose(state);
 }
 
-function parseOn(state) {
-    return binaryOp({ Caret3: 'On' }, parseComp, state);
-}
-
-function parseComp(state) {
+function parseCompose(state) {
     return binaryOp({ Left3: 'ComposeRL', Right3: 'ComposeLR' }, parseBasic, state);
 }
 
 function parseBasic(state) {
-    return binaryOp({ Star3: 'Split', And3: 'Fanout' }, parseSub, state);
+    return binaryOp({ Star3: 'Split', And3: 'Fanout' }, parseCombine, state);
 }
 
-function parseSub(state) {
-    return binaryOp({ Sub: 'Substitute' }, parseOver, state);
+function parseCombine(state) {
+    return binaryOp({ Sub: 'Substitute', On: 'On' }, parseOver, state);
 }
 
 function parseOver(state) {

@@ -9,12 +9,10 @@ function tuple(...args) {
 // Spreads values onto functions as long as they are tuples.
 function spreadTuple(f, arg) {
     const pass = [];
-    for (const arg of args) {
     if (arg[isTuple]) {
         pass.push(...arg);
     } else {
         pass.push(arg);
-    }
     }
 
     return f(...pass);

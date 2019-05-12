@@ -58,7 +58,7 @@ function substitute(f, g) {
 /**
  * `on : ((b, b) -> c, a -> b) -> ((a, a) -> c)`
  * P-combinator on function arrows.
- * `^^^` in arrow-tag language, infixl 0.
+ * `<^>` in arrow-tag language, infixl 3.
  */
 function on(f, g) {
     return (x, y) => f(g(x), g(y));

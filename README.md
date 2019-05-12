@@ -12,7 +12,7 @@ const add = (x, y) => x + y;
 const square = x => x ** 2;
 const sqrt = Math.sqrt;
 
-const pythag = arrow`(${add} ^^^ ${square}) >>> ${sqrt}`;
+const pythag = arrow`${add} <^> ${square} >>> ${sqrt}`;
 
 pythag(3, 4); // -> 5
 ```
@@ -54,7 +54,7 @@ f(4); // [16, 2]
 ```
 
 ```js
-const f = arrow`${(x, y) => x - y} ^^^ ${x => x.age}`;
+const f = arrow`${(x, y) => x - y} <^> ${x => x.age}`;
 [{ age: 10 }, { age: 3 }].sort(f); // [{ age: 3 }, { age: 10 }]
 ```
 
