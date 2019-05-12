@@ -1,0 +1,14 @@
+{
+  "name": "arrow-tag",
+  "version": "0.1.0",
+  "description": "Arrows in JavaScript, including a DSL",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node test"
+  },
+  "author": "1Computer1",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  }
+}
