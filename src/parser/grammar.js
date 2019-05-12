@@ -3,10 +3,10 @@ const { peek, location, many1, oneOf, token, binaryOp } = require('./parser');
 /*
     Arrow  = On
     On     = Comp ("^^^" Comp)*
-    Comp   = Choice ((">>>" | "<<<") Choice)*
+    Comp   = Basic ((">>>" | "<<<") Basic)*
     Basic  = Sub (("***" | "&&&") Sub)*
     Sub    = Over ("<*>" Over)*
-    Over   = Pre ("@" [0-9]+)*
+    Over   = Unary ("@" [0-9]+)*
     Unary  = ("$" | "#" | "~")? Atom
     Atom   = Interp | "(" Arrow ")"
     Interp = ...
