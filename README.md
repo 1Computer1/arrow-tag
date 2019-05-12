@@ -41,6 +41,9 @@ Binary operators also have an associativity and precedence; higher precedence me
 You can view the full list of combinators and their behavior in `src/combinators.js`.  
 Notation is fairly obvious; `(...a)` refers to all arguments of the function in parameters position and to an unknown amount of values in return position.  
 
+Also included are aliases for JavaScript operators, e.g. `add` for `(x, y) => x + y`.  
+You can also create operator sections as in `lsect(add, 1)` for `x => 1 + x`.  
+
 ## More Examples
 
 ```js
