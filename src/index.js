@@ -1,6 +1,6 @@
 const { parse, lex, evaluate } = require('./parser');
-const combinators = require('./combinators');
-const tuples = require('./tuples');
+const combinators = require('./util/combinators');
+const tuples = require('./util/tuples');
 
 /**
  * Creates an arrow using a custom syntax in a template tag.

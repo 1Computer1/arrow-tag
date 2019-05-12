@@ -1,4 +1,4 @@
-const c = require('../combinators');
+const c = require('../util/combinators');
 
 function evaluate(node) {
     switch (node.type) {
