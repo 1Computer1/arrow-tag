@@ -10,7 +10,7 @@ function location(state) {
     return state.tokens[state.position].position;
 }
 
-function next(state, n = 1) {
+function next(n, state) {
     if (state.position >= state.tokens.length) {
         return null;
     }
@@ -46,8 +46,8 @@ function many1(parse, state) {
 
 function binaryOp(table, parse, state) {
     const node1 = parse(state);
-    const nodes = many1(s => {
-        const op = oneOf(Object.keys(table), s);
+    const nodes = many1(() => {
+        const op = oneOf(Object.keys(table), state);
         if (op === null) {
             return null;
         }
@@ -60,26 +60,22 @@ function binaryOp(table, parse, state) {
         return [table[op.type], x];
     }, state);
 
-    if (nodes === null) {
-        return node1;
-    }
-
-    return nodes.reduce((lhs, [op, rhs]) => ({ type: 'Binary', lhs, op, rhs }), node1);
+    return [node1, nodes];
 }
 
 function oneOf(tokens, state) {
-    for (const t of tokens) {
-        if (peek(state) !== null && peek(state).type === t) {
-            return next(state);
+    for (const tok of tokens) {
+        if (peek(state) !== null && peek(state).type === tok) {
+            return next(1, state);
         }
     }
 
     return null;
 }
 
-function token(t, state) {
-    if (peek(state) !== null && peek(state).type === t) {
-        return next(state);
+function token(tok, state) {
+    if (peek(state) !== null && peek(state).type === tok) {
+        return next(1, state);
     }
 
     return null;

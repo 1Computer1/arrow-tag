@@ -1,101 +1,149 @@
+const { Lexemes } = require('./lexer');
 const { peek, location, many1, oneOf, token, binaryOp } = require('./parser');
 
 /*
-    Arrow   = Comp
+    Arrow   = Compose EOF
     Compose = Basic ((">>>" | "<<<") Basic)*
     Basic   = Combine (("***" | "&&&") Combine)*
     Combine = Over (("<*>" | "<^>") Over)*
     Over    = Unary ("@" [0-9]+)*
-    Unary   = ("$" | "#" | "~")? Atom
-    Atom    = Interp | "(" Arrow ")"
-    Interp  = ...
+    Unary   = ("$" | "#" | "~")? Value
+    Value   = "${...}" | "(" Arrow ")"
 */
+
+const Nodes = {
+    Value: 'Value',
+    Unary: 'Unary',
+    Binary: 'Binary',
+    Over: 'Over'
+};
+
+const Operators = {
+    // >>>
+    ComposeLR: 'ComposeLR',
+    // <<<
+    ComposeRL: 'ComposeRL',
+    // ***
+    Split: 'Split',
+    // &&&
+    Fanout: 'Fanout',
+    // <*>
+    Substitute: 'Substitute',
+    // <^>
+    On: 'On',
+    // $
+    FlatMap: 'FlatMap',
+    // #
+    Join: 'Join',
+    // ~
+    Reverse: 'Reverse'
+};
 
 function parse(tokens) {
     const state = { tokens, position: 0 };
-    const a = parseArrow(state);
-    const eof = token('EOF', state);
+    return parseArrow(state);
+}
+
+function parseArrow(state) {
+    const node = parseCompose(state);
+    const eof = token(Lexemes.EOF, state);
     if (eof === null) {
         throw makeError(state);
     }
 
-    return a;
-}
-
-function parseArrow(state) {
-    return parseCompose(state);
+    return node;
 }
 
 function parseCompose(state) {
-    return binaryOp({ Left3: 'ComposeRL', Right3: 'ComposeLR' }, parseBasic, state);
+    return binaryOpToAST({
+        [Lexemes.LAngle3]: Operators.ComposeRL,
+        [Lexemes.RAngle3]: Operators.ComposeLR
+    }, parseBasic, state);
 }
 
 function parseBasic(state) {
-    return binaryOp({ Star3: 'Split', And3: 'Fanout' }, parseCombine, state);
+    return binaryOpToAST({
+        [Lexemes.Star3]: Operators.Split,
+        [Lexemes.Amp3]: Operators.Fanout
+    }, parseCombine, state);
 }
 
 function parseCombine(state) {
-    return binaryOp({ Sub: 'Substitute', On: 'On' }, parseOver, state);
+    return binaryOpToAST({
+        [Lexemes.StarOp]: Operators.Substitute,
+        [Lexemes.CaretOp]: Operators.On
+    }, parseOver, state);
 }
 
 function parseOver(state) {
     const node1 = parseUnary(state);
-    const nodes = many1(s => {
-        const at = token('At', s);
+    const nodes = many1(() => {
+        const at = token(Lexemes.At, state);
         if (at === null) {
             return null;
         }
 
-        return token('Number', s);
+        return token(Lexemes.Number, state);
     }, state);
 
     if (nodes === null) {
         return node1;
     }
 
-    return nodes.reduce((value, n) => ({ type: 'Over', value, ix: Number(n.value) }), node1);
+    return nodes.reduce((value, n) => ({ type: Nodes.Over, value, ix: n }), node1);
 }
 
-const unaryTable = {
-    Dollar: 'FlatMap',
-    Hash: 'Join',
-    Tilde: 'Reverse'
-};
-
 function parseUnary(state) {
-    const ops = many1(s => oneOf(['Dollar', 'Hash', 'Tilde'], s), state);
-    const node1 = parseAtom(state);
+    const ops = many1(() => oneOf([Lexemes.Dollar, Lexemes.Hash, Lexemes.Tilde], state), state);
+    const node1 = parseValue(state);
     if (ops === null) {
         return node1;
     }
 
-    return ops.reduceRight((value, op) => ({ type: 'Unary', op: unaryTable[op.type], value }), node1);
+    return ops.reduceRight((value, op) => ({
+        type: Nodes.Unary,
+        op: {
+            [Lexemes.Dollar]: Operators.FlatMap,
+            [Lexemes.Hash]: Operators.Join,
+            [Lexemes.Tilde]: Operators.Reverse
+        }[op.type],
+        value
+    }), node1);
 }
 
-function parseAtom(state) {
-    const e = token('Interp', state);
-    if (e !== null) {
-        return { type: 'Atom', value: e.value };
+function parseValue(state) {
+    const node1 = token(Lexemes.Interp, state);
+    if (node1 !== null) {
+        return { type: Nodes.Value, value: node1.value };
     }
 
-    const open = token('Open', state);
+    const open = token(Lexemes.LParen, state);
     if (open === null) {
         throw makeError(state);
     }
 
-    const a = parseArrow(state);
-    token('Close', state);
-    return a;
+    const node2 = parseArrow(state);
+    token(Lexemes.RParen, state);
+    return node2;
 }
 
 function makeError(state) {
-    if (!peek(state) || peek(state).type === 'EOF') {
+    if (!peek(state) || peek(state).type === Lexemes.EOF) {
         return new Error(`Unexpected end of input at position ${location(state)}`);
-    } else if (peek(state).type === 'Interp') {
+    } else if (peek(state).type === Lexemes.Interp) {
         return new Error(`Unexpected interpolated value at position ${location(state)}`);
     } else {
         return new Error(`Unexpected token ${peek(state).value} at position ${location(state)}`);
     }
 }
 
-module.exports = { parse };
+function binaryOpToAST(table, parse_, state) {
+    const [node1, nodes] = binaryOp(table, parse_, state);
+    if (nodes === null) {
+        return node1;
+    }
+
+    return nodes.reduce((lhs, [op, rhs]) => ({ type: Nodes.Binary, lhs, op, rhs }), node1);
+}
+
+module.exports = { Nodes, Operators, parse };
