@@ -6,7 +6,8 @@ The design philosophy of this library (other than being a proof-of-concept) is t
 compose their functions without having to resort to a messy nesting of combinators nor having to mess with
 their functions through a middleman e.g. currying.  
 
-This library is based upon `Control.Arrow`, with liberties taken to ease its use in JavaScript.  
+This library is based mostly upon Haskell's `Control.Arrow` and `Data.Function`,
+and functional programming in general, with liberties taken to ease its use in JavaScript.  
 
 ## Example
 
@@ -55,7 +56,7 @@ f(10); // -> "20, wow!"
 
 ```js
 const f = arrow`${rsect(pow, 2)} &&& ${Math.sqrt}`;
-f(4); // -> [16, 2]
+f(4); // -> [16, 2, [Symbol(isTuple)]: true]
 ```
 
 ```js
