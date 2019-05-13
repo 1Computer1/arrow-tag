@@ -25,7 +25,15 @@ function reverse(f) {
  * `$` in arrow-tag language, prefix operator.
  */
 function flatMap(f) {
-    return (...xs) => tuple(...[].concat(...xs.map(x => f(x))));
+    return (...xs) => {
+        const yss = xs.map(x => f(x));
+        const zs = [];
+        for (const ys of yss) {
+            spreadTuple((...args) => zs.push(...args), ys);
+        }
+
+        return tuple(...zs);
+    };
 }
 
 /**
