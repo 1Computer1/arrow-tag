@@ -42,7 +42,7 @@ You can view the full list of combinators and their behavior in `src/combinators
 Notation is fairly obvious; `(...a)` refers to all arguments of the function in parameters position and to an unknown amount of values in return position.  
 
 Also included are aliases for JavaScript operators, e.g. `add` for `(x, y) => x + y`.  
-You can also create operator sections as in `lsect(add, 1)` for `x => 1 + x`.  
+You can also create operator sections as in `lsect(1, add)` for `x => 1 + x`.  
 
 ## More Examples
 

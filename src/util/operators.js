@@ -42,7 +42,7 @@ const access = (x, y) => x[y];
 // Other
 const curry = f => x => y => f(x, y);
 const uncurry = f => (x, y) => f(x)(y);
-const lsect = (f, x) => y => f(x, y);
+const lsect = (x, f) => y => f(x, y);
 const rsect = (f, y) => x => f(x, y);
 
 module.exports = {
